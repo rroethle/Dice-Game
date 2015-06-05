@@ -4,22 +4,31 @@ import random
 DICE = [20,12,10,8,6,4] #list of different sided dice used in game.
 
 
-def check_for_number(input,question):
+def check_for_number(input,question,player_or_computer):
     '''
     validates user input to make sure it's a valid number and re-asks the question if it isn't.
     '''
+    indicator = player_or_computer
     try:
         int(input)
-        if int(input) > 0:
-            return input
+        if player_or_computer == 0:
+            if int(input) > 0:
+                return input
+            else:
+                print "Value entered must be greater than 0"
+                num = raw_input(question)
+                return check_for_number(num,question,indicator)
         else:
-            print "Value entered must be greater than 0"
-            num = raw_input(question)
-            return check_for_number(num,question)
+            if int(input) >= 0:
+                return input
+            else:
+                print "Value entered must not be negative"
+                num = raw_input(question)
+                return check_for_number(num,question,indicator)
     except:
         print "Value entered is not a number"
         num = raw_input(question)
-        return check_for_number(num,question)
+        return check_for_number(num,question,indicator)
 
 
 def dice_choice_check(dice_choice,dice_list):
@@ -189,8 +198,12 @@ def check_if_winner(player_list,num_rounds):
     top_score = max(final_round_scores)
     if top_score == int(num_rounds):
     	player_wins = final_round_scores.index(top_score)
-    	
-        print player_list[player_wins][0] + " wins!" + " Great Job!"
+    	winner_statement = player_list[player_wins][0] + " wins!" + " Great Job!"
+        #print player_list[player_wins][0] + " wins!" + " Great Job!"
+        #print "====================================================="
+        print "{0:^60}".format(winner_statement)
+        print "========================================================================="
+        print "\n"
         game_over = True
         return game_over
     else:
@@ -214,11 +227,13 @@ def play_round(player_list,num_rounds):
         while dice_check == False:
             if player[5] == 0:
                 dice_choice = raw_input(str(player_name) + " - Please select a Dice Choice?  "+ str(player_dice) + " ")
+                print "\n"*100
                 dice_check = dice_choice_check(dice_choice,player[1])
             else:
                 dice_check = True
         if player[5] == 1:
             dice_choice = random.choice(player[1])
+            player[1].remove(dice_choice)
         dice_choice = int(dice_choice)
         player[2] = dice_choice
         dice_roll = random.randrange(1,dice_choice)
@@ -300,20 +315,24 @@ def play_game(player_values_list,num_rounds):
         		player[3] = 0
         		player[1] = [4,6,8,10,12,20]
         else:
-        	print "GAME OVER!!!!!!"
-
+            play_again = raw_input("Play again? Type 'y' to play again or any other key to end")
+        if play_again == 'y':
+            return True
+        else:
+            return False
 
 
 #game play starts here. Ask user for number of players and rounds.
-start_game()
-num_players = raw_input("How many human players? ")
-checked_players = check_for_number(num_players,"How many human players? ")
-num_computers = raw_input("How many computer players? ")
-checked_computers = check_for_number(num_computers,"How many computer players? ")
-num_rounds = raw_input("How many rounds will it take to win? ")
-checked_rounds = check_for_number(num_rounds,"How many rounds will it take to win? ")
+game_play = True
 
-
-player_list = set_players(checked_players,checked_computers) #player_list is generated with all scores set to 0.
-
-play_game(player_list,checked_rounds) #plays game based on player list and number of rounds.
+#the user can contine to play game as long as they select y at the end.
+while game_play == True:
+    start_game()
+    num_players = raw_input("How many human players? ")
+    checked_players = check_for_number(num_players,"How many human players? ",0)
+    num_computers = raw_input("How many computer players? ")
+    checked_computers = check_for_number(num_computers,"How many computer players? ",1)
+    num_rounds = raw_input("How many rounds will it take to win? ")
+    checked_rounds = check_for_number(num_rounds,"How many rounds will it take to win? ",0)
+    player_list = set_players(checked_players,checked_computers)
+    game_play = play_game(player_list,checked_rounds) #plays game based on player list and number of rounds.
