@@ -1,34 +1,35 @@
 import random
-
+import getpass #used to mask user input for die choice
 #GLOBAL CONSTANT USED TO ASSIGN NUMBER OF DICE TO GAME PLAY.
 DICE = [20,12,10,8,6,4] #list of different sided dice used in game.
 
 
-def check_for_number(input,question,player_or_computer):
+def check_for_number(input,question,allow_zero):
     '''
     validates user input to make sure it's a valid number and re-asks the question if it isn't.
+    if allow_zero is equal to 0 then the zero value is not allowed. If allow_zero is equal to 0 then it is.
     '''
-    indicator = player_or_computer
+    zero_value = allow_zero
     try:
         int(input)
-        if player_or_computer == 0:
+        if zero_value == 0:
             if int(input) > 0:
                 return input
             else:
                 print "Value entered must be greater than 0"
                 num = raw_input(question)
-                return check_for_number(num,question,indicator)
+                return check_for_number(num,question,zero_value)
         else:
             if int(input) >= 0:
                 return input
             else:
                 print "Value entered must not be negative"
                 num = raw_input(question)
-                return check_for_number(num,question,indicator)
+                return check_for_number(num,question,zero_value)
     except:
         print "Value entered is not a number"
         num = raw_input(question)
-        return check_for_number(num,question,indicator)
+        return check_for_number(num,question,zero_value)
 
 
 def dice_choice_check(dice_choice,dice_list):
@@ -51,25 +52,27 @@ def set_players(num_players,num_computers):
     '''
     generates list of players and assigns values to a player list used for game play.
     returns list of players with values.
+    list values are player name, DICE, current score of the roll, current round score, number of round wins, and if player
+    is a computer or player. 6 values in all for each list item.
     '''
     print "\n"
     players = []
-    for player in range(0,int(num_players)):
+    for player in range(0,int(num_players)):#human players
     	player_number = player + 1
         new_player= raw_input("Player "+ str(player_number) + "- What is your name? ")
         current_score = 0
         round_score = 0
         round_wins = 0
-        player_or_computer = 0
+        player_or_computer = 0 #0 refers to player
         player_tracker = [new_player,[4,6,8,10,12,20],current_score,round_score,round_wins,player_or_computer]
         players.append(player_tracker)
-    for computer in range(0,int(num_computers)):
+    for computer in range(0,int(num_computers)):#computer players
         computer_number = computer + 1
         computer_player = "Computer " + str(computer_number)
         current_score = 0
         round_score = 0
         round_wins = 0
-        player_or_computer = 1
+        player_or_computer = 1 #1 refers to computer player
         computer_tracker = [computer_player,[4,6,8,10,12,20],current_score,round_score,round_wins,player_or_computer]
         players.append(computer_tracker)
     return players
@@ -99,6 +102,7 @@ def start_game():
 def break_tie_round(player_list, player_index_list,die_choice):
 	'''
 	runs a tie-breaker game if there is a tie in the round
+    returns a new round score based on a new random roll of the dice .
 	'''
 	round_score = []
 	for player in player_index_list:
@@ -110,12 +114,15 @@ def break_tie_round(player_list, player_index_list,die_choice):
 def determine_round_winner(player_list):
     '''
     checks to see which player has won the round
+    if there is a tie, rolls a 20 sided die to determine the winner until someone wins.
+    returns the winner of the round.
     '''
     top_score = 0
     round_score = []
     player_list_wins = []
     for player in player_list:
         round_score.append(player[3])
+    #uses list comprehensions and enumerate to check to see if there are multipl max values.
     get_max_values = [val for val, max_val in enumerate(round_score) if max_val == max(round_score)]
     get_max_values_length = len(get_max_values)
     if get_max_values_length > 1:
@@ -127,7 +134,7 @@ def determine_round_winner(player_list):
             tie_message += ", "
         break_tie_check = False
         while break_tie_check == False:
-        	round_score = break_tie_round(player_list,get_max_values,20)
+        	round_score = break_tie_round(player_list,get_max_values,20)#20 refers to the numer of sides the dice has
         	get_max_values = [val for val, max_val in enumerate(round_score) if max_val == max(round_score)]
     		get_max_values_length = len(get_max_values)
     		if get_max_values_length == 1:
@@ -139,7 +146,8 @@ def determine_round_winner(player_list):
 
 def get_max_value(dice_rolls):
     '''
-    checks to see if there is a tie
+    returns all max values given a list containing dice rolls.
+    will return multiple winners if there are multiple max values
     '''
     all_max_roll_index = []
     counter_index = 0
@@ -152,7 +160,8 @@ def get_max_value(dice_rolls):
 
 def get_min_sided_dice(dice):
     '''
-    Gets the index of the dice choosen with the min number of sides.
+    Gets the index of the dice choosen with the minimum number of sides from a dice list.
+    Used to calculate the minimum dice rolled with multiple players to determine score.
     '''
     all_min_sided_index = []
     counter_index = 0
@@ -165,7 +174,7 @@ def get_min_sided_dice(dice):
 
 def tiebreaker(player_list, player_list_index,die_choice):
     '''
-    determines the winner in the event of a tie
+    determines the winner in the event of a tie of a turn roll
 	'''
     tie = True
     print "There is a tie!"
@@ -189,7 +198,8 @@ def tiebreaker(player_list, player_list_index,die_choice):
 
 def check_if_winner(player_list,num_rounds):
     '''
-    checks to see at the end of a round if a player wins.
+    checks to see at the end of a round if a player wins. If there is one, a winner statement is printed.
+    returns either true or false that the game is over.
     '''
     top_score = 0
     final_round_scores = []
@@ -213,7 +223,7 @@ def check_if_winner(player_list,num_rounds):
 
 def play_round(player_list,num_rounds):
     '''
-    main game play for a round
+    main game play for a round. Prints winner of a round at the end.
     '''
     DICE_SCORE = [1,2,3,4,5,6]
     players = player_list
@@ -225,13 +235,14 @@ def play_round(player_list,num_rounds):
         player_dice = player[1]
         dice_check = False
         while dice_check == False:
-            if player[5] == 0:
-                dice_choice = raw_input(str(player_name) + " - Please select a Dice Choice?  "+ str(player_dice) + " ")
-                print "\n"*100
-                dice_check = dice_choice_check(dice_choice,player[1])
+            if player[5] == 0:#used for human players as 0 indicates a human player.
+                dice_choice = getpass.getpass(str(player_name) + " - Please select a Dice Choice?  "+ str(player_dice) + " ")
+                #dice_choice = raw_input(str(player_name) + " - Please select a Dice Choice?  "+ str(player_dice) + " ")
+                #print "\n"*100 #prints 100 blank lines to hide choice from other players
+                dice_check = dice_choice_check(dice_choice,player[1])#checks to make sure dice choosen is in the list.
             else:
                 dice_check = True
-        if player[5] == 1:
+        if player[5] == 1:#used for computer players as 0 indicates a computer player and randomly chooses a dice to roll from dice list.
             dice_choice = random.choice(player[1])
             player[1].remove(dice_choice)
         dice_choice = int(dice_choice)
@@ -243,7 +254,7 @@ def play_round(player_list,num_rounds):
     print "\n"
     all_max_values = get_max_value(dice_roll_turn)
     num_max_values = len(all_max_values)
-    if num_max_values > 1:
+    if num_max_values > 1: #checks to see if there is multiple max values and if there is a tie and generates tie-breaker information
     	choices = []
     	for value in all_max_values:
     		choices.append(players[value][2])
@@ -254,7 +265,7 @@ def play_round(player_list,num_rounds):
     	if num_min_dice_rolled > 1:
     		tie = [True,0]
     		while tie[0] == True:
-    			tie_check = tiebreaker(players,min_dice_rolled,min_dice_sides)
+    			tie_check = tiebreaker(players,min_dice_rolled,min_dice_sides) #runs tiebreaker round
     			tie[0] = tie_check[0]
     		winner = tie_check[1]
     		final_score = 1
@@ -274,7 +285,7 @@ def play_round(player_list,num_rounds):
     	else:
         	final_score = final_score + 1
     players[winner][3] = players[winner][3] + final_score
-    for result in output_results:
+    for result in output_results: #prints output of turn for each player roll.
         print result
     print "\n"
     print str(players[winner][0])+" Wins Turn!"
@@ -298,7 +309,8 @@ def play_round(player_list,num_rounds):
 
 def play_game(player_values_list,num_rounds):
     '''
-    plays a single game with the dice
+    plays a single game with the dice. runs play_round to run through a complete set of dice.
+    asks user at the end if they would like to play again.
 	'''
     top_score = 0
     game_over = False
@@ -326,6 +338,8 @@ def play_game(player_values_list,num_rounds):
 game_play = True
 
 #the user can contine to play game as long as they select y at the end.
+#when checking the user input, the last value (either a 0 or 1) determine if the try/except statement should include 0 when checking
+#if the value is 1, then it will allow 0 and if it is 0 then the input will not allow the value.
 while game_play == True:
     start_game()
     num_players = raw_input("How many human players? ")
@@ -334,5 +348,5 @@ while game_play == True:
     checked_computers = check_for_number(num_computers,"How many computer players? ",1)
     num_rounds = raw_input("How many rounds will it take to win? ")
     checked_rounds = check_for_number(num_rounds,"How many rounds will it take to win? ",0)
-    player_list = set_players(checked_players,checked_computers)
-    game_play = play_game(player_list,checked_rounds) #plays game based on player list and number of rounds.
+    player_list = set_players(checked_players,checked_computers)#generates a seperate player list storing the values associated with each player
+    game_play = play_game(player_list,checked_rounds) #plays game based on player list generated from set_players
