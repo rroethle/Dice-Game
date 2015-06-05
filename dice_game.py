@@ -38,7 +38,7 @@ def dice_choice_check(dice_choice,dice_list):
     	print "Value entered is text. Please re-enter values."
     	return False
 
-def set_players(num_players):
+def set_players(num_players,num_computers):
     '''
     generates list of players and assigns values to a player list used for game play.
     returns list of players with values.
@@ -51,8 +51,18 @@ def set_players(num_players):
         current_score = 0
         round_score = 0
         round_wins = 0
-        player_tracker = [new_player,[4,6,8,10,12,20],current_score,round_score,round_wins]
+        player_or_computer = 0
+        player_tracker = [new_player,[4,6,8,10,12,20],current_score,round_score,round_wins,player_or_computer]
         players.append(player_tracker)
+    for computer in range(0,int(num_computers)):
+        computer_number = computer + 1
+        computer_player = "Computer " + str(computer_number)
+        current_score = 0
+        round_score = 0
+        round_wins = 0
+        player_or_computer = 1
+        computer_tracker = [computer_player,[4,6,8,10,12,20],current_score,round_score,round_wins,player_or_computer]
+        players.append(computer_tracker)
     return players
 
 
@@ -64,7 +74,16 @@ def start_game():
     print "                      WELCOME TO DICE WAR!!!!!"
     print "====================================================================="
     print "OBJECT OF GAME IS TO ROLE A DICE SCORE HIGHER THAN THE OTHER PLAYERS"
-    print "SELECT FROM 6 DIFFERENT SIDED DICE AND ROLL ONE PER ROUND"
+    print "SELECT FROM 6 DIFFERENT SIDED DICE AND ROLL ONE PER TURN. PLAYER WITH"
+    print "THE HIGHEST ROLE WINS ROUND. SELECT LOWER SIDED DIE AND BEAT PLAYERS"
+    print "WITH HIGHER SIDED DICE AND EARN BONUS POINTS (1 EXTRA PER LEVEL HIGHER)"
+    print "IF TIE SCORE, PLAYER WITH LOWER SIDED DICE WINS. OTHERWISE YOU HAVE A "
+    print "WAR! A TIEBREAKER ROLE WILL DETERMINE THE WINNER. SCORE MORE POINTS THAN"
+    print "YOUR OPPONENTS IN THE 6 TURNS AND WIN THE ROUND. TIE SCORES WILL RESULT"
+    print "IN AN ULTIMATE WAR ROLE OFF WITH THE 20 SIDED DICE TO WIN THE ROUND."
+    print "THE GAME IS WON WHEN A PLAYER WINS THE NUMBER OF ROUNDS DETERMINED BEFORE"
+    print "THE GAME. PLAY WITH AS MANY PLAYERS OR COMPUTERS AS YOU'D LIKE."
+    print "GOOD LUCK AND HAVE FUN!"
     print "GOOD LUCK!"
     print "\n"
 
@@ -170,6 +189,7 @@ def check_if_winner(player_list,num_rounds):
     top_score = max(final_round_scores)
     if top_score == int(num_rounds):
     	player_wins = final_round_scores.index(top_score)
+    	
         print player_list[player_wins][0] + " wins!" + " Great Job!"
         game_over = True
         return game_over
@@ -185,20 +205,26 @@ def play_round(player_list,num_rounds):
     DICE_SCORE = [1,2,3,4,5,6]
     players = player_list
     dice_roll_turn = []
-
+    output_results = []
     print "\n"
     for player in players:
         player_name = player[0]
         player_dice = player[1]
         dice_check = False
         while dice_check == False:
-        	dice_choice = raw_input(str(player_name) + " - Please select a Dice Choice?  "+ str(player_dice) + " ")
-        	dice_check = dice_choice_check(dice_choice,player[1])
+            if player[5] == 0:
+                dice_choice = raw_input(str(player_name) + " - Please select a Dice Choice?  "+ str(player_dice) + " ")
+                dice_check = dice_choice_check(dice_choice,player[1])
+            else:
+                dice_check = True
+        if player[5] == 1:
+            dice_choice = random.choice(player[1])
         dice_choice = int(dice_choice)
         player[2] = dice_choice
         dice_roll = random.randrange(1,dice_choice)
         dice_roll_turn.append(dice_roll)
-        print player_name + " Rolls a " + str(dice_roll)
+        result = player_name + " Selects a " + str(dice_choice) + " Sided Dice and Rolls a " + str(dice_roll)
+        output_results.append(result)
     print "\n"
     all_max_values = get_max_value(dice_roll_turn)
     num_max_values = len(all_max_values)
@@ -233,7 +259,11 @@ def play_round(player_list,num_rounds):
     	else:
         	final_score = final_score + 1
     players[winner][3] = players[winner][3] + final_score
+    for result in output_results:
+        print result
+    print "\n"
     print str(players[winner][0])+" Wins Turn!"
+    print "\n"
     if len(player_list[0][1]) != 0:
     	print "{0:^45}".format("Current Round Scores")
     	print "================================================"
@@ -276,11 +306,14 @@ def play_game(player_values_list,num_rounds):
 
 #game play starts here. Ask user for number of players and rounds.
 start_game()
-num_players = raw_input("How many players? ")
-checked_players = check_for_number(num_players,"How many players? ")
+num_players = raw_input("How many human players? ")
+checked_players = check_for_number(num_players,"How many human players? ")
+num_computers = raw_input("How many computer players? ")
+checked_computers = check_for_number(num_computers,"How many computer players? ")
 num_rounds = raw_input("How many rounds will it take to win? ")
 checked_rounds = check_for_number(num_rounds,"How many rounds will it take to win? ")
 
-player_list = set_players(checked_players) #player_list is generated with all scores set to 0.
+
+player_list = set_players(checked_players,checked_computers) #player_list is generated with all scores set to 0.
 
 play_game(player_list,checked_rounds) #plays game based on player list and number of rounds.
