@@ -1,5 +1,6 @@
 import random
 import getpass #used to mask user input for die choice
+
 #GLOBAL CONSTANT USED TO ASSIGN NUMBER OF DICE TO GAME PLAY.
 DICE = [20,12,10,8,6,4] #list of different sided dice used in game.
 
